@@ -37,6 +37,7 @@ import {
   ROUTES_MANIFEST,
   SERVERLESS_DIRECTORY,
   SERVER_DIRECTORY,
+  SIZE_MANIFEST,
 } from '../next-server/lib/constants'
 import {
   getRouteRegex,
@@ -71,6 +72,7 @@ import {
   PageInfo,
   printCustomRoutes,
   printTreeView,
+  generateSizeManifest,
 } from './utils'
 import getBaseWebpackConfig from './webpack-config'
 import { PagesManifest } from './webpack/plugins/pages-manifest-plugin'
@@ -1056,6 +1058,25 @@ export default async function build(dir: string, conf = null): Promise<void> {
       isModern: config.experimental.modern,
     }
   )
+
+  await promises.writeFile(
+    path.join(distDir, SIZE_MANIFEST),
+    JSON.stringify(
+      await generateSizeManifest(allPageInfos, pageKeys, {
+        distPath: distDir,
+        buildId: buildId,
+        pagesDir,
+        useStatic404,
+        pageExtensions: config.pageExtensions,
+        buildManifest,
+        isModern: config.experimental.modern,
+      }),
+      null,
+      2
+    ),
+    'utf8'
+  )
+
   printCustomRoutes({ redirects, rewrites, headers })
 
   if (tracer) {
